@@ -40,6 +40,13 @@ const TRACKS_SEED: Track[] = [
     duration: 413,
     genre: 'Rock',
   },
+  {
+    id: '5',
+    title: 'Hotel California',
+    artist: 'Eagles',
+    duration: 391,
+    genre: 'Rock',
+  },
 ];
 
 @Injectable()
