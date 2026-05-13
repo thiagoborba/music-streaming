@@ -12,9 +12,27 @@ export interface Track {
 }
 
 const TRACKS_SEED: Track[] = [
-  { id: '1', title: 'Electronic Pulse', artist: 'Thiago Dev', duration: 213, genre: 'Electronic' },
-  { id: '2', title: 'Lo-Fi Study', artist: 'Thiago Dev', duration: 184, genre: 'Lo-Fi' },
-  { id: '3', title: 'Deep Focus', artist: 'Thiago Dev', duration: 256, genre: 'Ambient' },
+  {
+    id: '1',
+    title: 'Like a Stone',
+    artist: 'Audioslave',
+    duration: 294,
+    genre: 'Rock',
+  },
+  {
+    id: '2',
+    title: 'Black',
+    artist: 'Pearl Jam',
+    duration: 346,
+    genre: 'Rock',
+  },
+  {
+    id: '3',
+    title: 'Toxicity',
+    artist: 'System of a Down',
+    duration: 213,
+    genre: 'Metal',
+  },
 ];
 
 @Injectable()
