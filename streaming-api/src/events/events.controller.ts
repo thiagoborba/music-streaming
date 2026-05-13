@@ -13,7 +13,10 @@ export class EventsController {
   @Post('play')
   @HttpCode(HttpStatus.ACCEPTED)
   async registerPlay(@Body() body: PlayEventDto) {
-    await this.playQueue.add({ trackId: body.trackId, timestamp: new Date().toISOString() });
+    await this.playQueue.add({
+      trackId: body.trackId,
+      timestamp: new Date().toISOString(),
+    });
     return { queued: true };
   }
 }
