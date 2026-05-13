@@ -6,7 +6,7 @@ import {
   Res,
   HttpStatus,
 } from '@nestjs/common';
-import { Response } from 'express';
+import type { Response } from 'express';
 import { StreamService } from './stream.service';
 
 @Controller('stream')
