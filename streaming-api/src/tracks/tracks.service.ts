@@ -33,6 +33,13 @@ const TRACKS_SEED: Track[] = [
     duration: 213,
     genre: 'Metal',
   },
+  {
+    id: '4',
+    title: 'Time',
+    artist: 'Pink Floyd',
+    duration: 413,
+    genre: 'Rock',
+  },
 ];
 
 @Injectable()
