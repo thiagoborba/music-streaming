@@ -47,6 +47,13 @@ const TRACKS_SEED: Track[] = [
     duration: 391,
     genre: 'Rock',
   },
+  {
+    id: '6',
+    title: 'The Great Gig in the Sky',
+    artist: 'Pink Floyd',
+    duration: 284,
+    genre: 'Rock',
+  },
 ];
 
 @Injectable()
