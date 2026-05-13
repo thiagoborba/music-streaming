@@ -6,8 +6,8 @@ Projeto de portfólio demonstrando streaming de áudio com alta concorrência. C
 
 ```
 music-streaming/
-├── streaming-api/   # NestJS backend — porta 3001
-├── streaming-web/   # Next.js frontend — porta 3000
+├── streaming-api/   # NestJS backend — porta 3001 (Railway em prod)
+├── streaming-web/   # Next.js frontend — porta 3000 (Vercel em prod)
 └── load-test/       # k6 TypeScript — testes de carga
 ```
 
@@ -46,24 +46,44 @@ k6 run dist/concurrent-listeners.js
 
 ## Variáveis de ambiente
 
-**Backend** — sem `.env` obrigatório em dev (Redis localhost:6379 por padrão)
+### Backend (`streaming-api/`)
 
-**Frontend** (`.env.local`):
-- `NEXT_PUBLIC_API_URL` — URL do backend (padrão: `http://localhost:3001`)
+Veja `streaming-api/.env.example`. Em dev local nenhuma é obrigatória, mas o `StreamService` agora lê os MP3s do **Supabase Storage**, então `SUPABASE_URL` e `SUPABASE_KEY` precisam estar setados para `/stream/:id` funcionar.
+
+| Variável        | Obrigatório | Onde                  | Descrição                                                                |
+|-----------------|-------------|-----------------------|--------------------------------------------------------------------------|
+| `SUPABASE_URL`  | sim         | Railway + dev         | URL do projeto Supabase (`https://<ref>.supabase.co`)                    |
+| `SUPABASE_KEY`  | sim         | Railway + dev         | Anon key pública (bucket `audio` é público)                              |
+| `REDIS_URL`     | prod        | Railway (automático)  | Injetado pelo add-on Redis. Em dev cai para `localhost:6379`             |
+| `CORS_ORIGIN`   | prod        | Railway               | Origens permitidas, separadas por vírgula. Ex.: `https://<app>.vercel.app` |
+| `PORT`          | não         | Railway (automático)  | Em dev cai para `3001`                                                   |
+
+### Frontend (`streaming-web/.env.local`)
+
+| Variável               | Descrição                                              |
+|------------------------|--------------------------------------------------------|
+| `NEXT_PUBLIC_API_URL`  | URL pública do backend. Em prod: `https://<app>.up.railway.app` |
 
 ## Áudio de amostra
 
-Adicione arquivos `.mp3` em `streaming-api/audio/` com os nomes `1.mp3`, `2.mp3`, `3.mp3`.
-Sugestão: baixe amostras livres de royalties em freemusicarchive.org ou use qualquer MP3 local.
+Os 6 MP3s (`1.mp3` a `6.mp3`) vivem em duas localizações:
+- **Dev local**: `streaming-api/audio/` (ignorado pelo deploy do Railway)
+- **Produção**: bucket público `audio` no Supabase Storage
+
+Para subir manualmente: Supabase Dashboard → Storage → criar bucket `audio` (público) → upload dos 6 arquivos com os mesmos nomes.
 
 ## Arquitetura
 
-### Fluxo de streaming
+### Fluxo de streaming (produção)
 ```
 Browser → GET /stream/:id (Range: bytes=X-Y)
-NestJS StreamController → StreamService.createReadStream(start, end)
-→ fs.createReadStream() → pipe(response) → HTTP 206
+NestJS StreamController → StreamService.getTrackBuffer(id)
+  └── 1ª vez: Supabase Storage .download() → Buffer em memória
+  └── 2ª+:    Buffer já cacheado in-process
+→ Readable.from(buffer.subarray(start, end+1)).pipe(response) → HTTP 206
 ```
+
+O comportamento de Range/206 é idêntico ao do `fs.createReadStream` original — só a origem dos bytes mudou. Trade-off documentado em `stream.service.ts`: aceitável para 6 MP3s pequenos; para um catálogo grande, trocar por LRU ou redirect para URL assinada.
 
 ### Fluxo de cache (Redis)
 ```
@@ -80,3 +100,28 @@ Browser → POST /events/play { trackId } → HTTP 202 (aceito imediatamente)
                             → incrementa contador de plays por track
 ```
 O endpoint retorna imediatamente sem bloquear a resposta do usuário.
+
+## Deploy
+
+### Backend — Railway
+
+1. Criar projeto no Railway apontando para este repo.
+2. Em **Settings → Service**, setar `Root Directory` = `streaming-api`.
+3. Em **Variables**, adicionar `SUPABASE_URL`, `SUPABASE_KEY`, `CORS_ORIGIN`.
+4. Em **+ New → Database → Redis**, adicionar add-on Redis. `REDIS_URL` é injetado automaticamente.
+5. Railway usa `railway.json` (start command = `npm run start:prod`).
+6. Healthcheck path: `/` (NestJS responde "Hello World!" no controller default).
+
+### Frontend — Vercel
+
+1. Importar repo no Vercel.
+2. Em **Settings → General**, setar `Root Directory` = `streaming-web`.
+3. Em **Environment Variables**, adicionar `NEXT_PUBLIC_API_URL` = URL pública do Railway.
+4. Framework preset: Next.js (auto-detectado).
+
+### Supabase
+
+1. Criar projeto no Supabase.
+2. **Storage → New Bucket** com nome `audio`, marcado como **público**.
+3. Upload manual dos 6 arquivos de `streaming-api/audio/` para o bucket.
+4. Copiar `Project URL` e `anon public key` para as env vars do Railway.
