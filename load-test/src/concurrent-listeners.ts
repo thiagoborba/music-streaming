@@ -1,13 +1,18 @@
 import http from 'k6/http';
-import { check, sleep } from 'k6';
+import { check } from 'k6';
 import { Options } from 'k6/options';
 
 export const options: Options = {
-  stages: [
-    { duration: '10s', target: 100 },
-    { duration: '20s', target: 500 },
-    { duration: '10s', target: 0 },
-  ],
+  scenarios: {
+    load: {
+      executor: 'constant-arrival-rate',
+      rate: 5000,          // 5000 iterações/s = ~15k req/s
+      timeUnit: '1s',
+      duration: '1m',      // 1 minuto → ~300k iterações → ~900k requests
+      preAllocatedVUs: 200,
+      maxVUs: 500,
+    },
+  },
   thresholds: {
     http_req_duration: ['p(95)<500'],
     http_req_failed: ['rate<0.01'],
@@ -41,5 +46,4 @@ export default function (): void {
     { headers: { 'Content-Type': 'application/json' } },
   );
 
-  sleep(1);
 }

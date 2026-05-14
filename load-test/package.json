@@ -6,7 +6,7 @@
     "test": "npm run build && k6 run dist/concurrent-listeners.js"
   },
   "devDependencies": {
-    "@types/k6": "^0.56.0",
+    "@types/k6": "^2.0.0",
     "ts-loader": "^9.5.2",
     "typescript": "^5.8.3",
     "webpack": "^5.99.7",
