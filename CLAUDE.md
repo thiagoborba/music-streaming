@@ -26,7 +26,7 @@ npm run build       # Compilar TypeScript
 npm run start:prod  # Produção
 ```
 
-**Requer Redis rodando:** `redis-server` ou `docker run -p 6379:6379 redis`
+**Requer Redis rodando:** `npm run infra:up` (Docker Compose — ver seção Infraestrutura abaixo)
 
 ### Frontend (`streaming-web/`)
 ```bash
@@ -34,6 +34,26 @@ npm run dev    # Next.js dev — porta 3000
 npm run build
 npm start
 ```
+
+### Infraestrutura local (`docker-compose.yml` na raiz)
+
+```bash
+# De dentro de streaming-api/ (ou com -f ../docker-compose.yml de qualquer lugar)
+npm run infra:up    # sobe Redis em background
+npm run infra:down  # para e remove o container (dados preservados no volume)
+npm run infra:logs  # acompanha logs do Redis em tempo real
+
+# Reset completo (apaga o volume redis_data)
+docker compose down -v
+
+# Ver o que está rodando
+docker ps
+
+# Matar container à força (sem docker compose)
+docker rm -f music-streaming-redis
+```
+
+**Nota WSL2:** O daemon Docker não inicia automaticamente ao reabrir o terminal. Rodar `sudo service docker start` antes de usar qualquer comando docker.
 
 ### Load Test (`load-test/`)
 ```bash
