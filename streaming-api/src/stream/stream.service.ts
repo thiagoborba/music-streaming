@@ -1,6 +1,7 @@
+import { readFile } from 'fs/promises';
+import { join } from 'path';
 import {
   Injectable,
-  InternalServerErrorException,
   Logger,
   NotFoundException,
   OnModuleInit,
@@ -8,47 +9,29 @@ import {
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Readable } from 'stream';
 
-/**
- * StreamService — serves audio bytes from Supabase Storage (bucket: `audio`)
- * while preserving HTTP 206 Partial Content semantics for the controller.
- *
- * Strategy: fetch the full MP3 once per process, keep it in-memory (Buffer)
- * keyed by trackId, then slice the requested byte range on each request and
- * pipe it to the response via a Readable stream.
- *
- * Trade-offs:
- *   - Acceptable for ~5MB MP3 samples and a small, fixed catalog (6 tracks).
- *   - Avoids re-downloading the file on every Range request (browsers send
- *     many small Ranges per playback session).
- *   - For large libraries, swap the cache for an LRU and/or use signed-URL
- *     redirects so the CDN handles Range natively.
- */
 @Injectable()
 export class StreamService implements OnModuleInit {
   private readonly logger = new Logger(StreamService.name);
   private readonly bucket = 'audio';
-  private supabase!: SupabaseClient;
+  private supabase: SupabaseClient | null = null;
   private readonly buffers = new Map<string, Buffer>();
   private readonly inflight = new Map<string, Promise<Buffer>>();
 
   onModuleInit(): void {
     const url = process.env.SUPABASE_URL;
     const key = process.env.SUPABASE_KEY;
-    if (!url || !key) {
-      throw new InternalServerErrorException(
-        'SUPABASE_URL and SUPABASE_KEY must be set',
+    if (url && key) {
+      this.supabase = createClient(url, key, {
+        auth: { persistSession: false },
+      });
+      this.logger.log('Modo produção: áudio via Supabase Storage');
+    } else {
+      this.logger.warn(
+        'SUPABASE_URL/SUPABASE_KEY não definidos — modo local: lendo de audio/',
       );
     }
-    this.supabase = createClient(url, key, {
-      auth: { persistSession: false },
-    });
   }
 
-  /**
-   * Returns the full MP3 bytes for a given trackId, cached in-memory after
-   * the first fetch. Coalesces concurrent fetches for the same trackId so
-   * a burst of requests during cold start only triggers one download.
-   */
   async getTrackBuffer(trackId: string): Promise<Buffer> {
     const cached = this.buffers.get(trackId);
     if (cached) return cached;
@@ -56,7 +39,11 @@ export class StreamService implements OnModuleInit {
     const existing = this.inflight.get(trackId);
     if (existing) return existing;
 
-    const fetchPromise = this.downloadFromSupabase(trackId)
+    const source = this.supabase
+      ? () => this.downloadFromSupabase(trackId)
+      : () => this.readLocalFile(trackId);
+
+    const fetchPromise = source()
       .then((buf) => {
         this.buffers.set(trackId, buf);
         return buf;
@@ -73,30 +60,34 @@ export class StreamService implements OnModuleInit {
     return buffer.length;
   }
 
-  /**
-   * Returns a Readable stream over the inclusive byte range [start, end] of
-   * the cached buffer. The controller pipes this to the Express response,
-   * exactly mirroring the previous `fs.createReadStream({start, end})` flow.
-   */
   createRangeStream(buffer: Buffer, start: number, end: number): Readable {
-    const slice = buffer.subarray(start, end + 1);
-    return Readable.from(slice);
+    return Readable.from(buffer.subarray(start, end + 1));
   }
 
   private async downloadFromSupabase(trackId: string): Promise<Buffer> {
     const objectPath = `${trackId}.mp3`;
-    const { data, error } = await this.supabase.storage
-      .from(this.bucket)
-      .download(objectPath);
+    const { data, error } = await this.supabase!.storage.from(
+      this.bucket,
+    ).download(objectPath);
 
     if (error || !data) {
       this.logger.warn(
-        `Supabase download failed for ${objectPath}: ${error?.message ?? 'no data'}`,
+        `Supabase download falhou para ${objectPath}: ${error?.message ?? 'sem dados'}`,
       );
-      throw new NotFoundException(`Track ${trackId} not found`);
+      throw new NotFoundException(`Track ${trackId} não encontrada`);
     }
 
-    const arrayBuffer = await data.arrayBuffer();
-    return Buffer.from(arrayBuffer);
+    return Buffer.from(await data.arrayBuffer());
+  }
+
+  private async readLocalFile(trackId: string): Promise<Buffer> {
+    const filePath = join(process.cwd(), 'audio', `${trackId}.mp3`);
+    try {
+      return await readFile(filePath);
+    } catch {
+      throw new NotFoundException(
+        `Track ${trackId} não encontrada em ${filePath}`,
+      );
+    }
   }
 }
