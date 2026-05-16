@@ -5,8 +5,10 @@ import {
   Param,
   NotFoundException,
 } from '@nestjs/common';
+import { SkipThrottle } from '@nestjs/throttler';
 import { TracksService } from './tracks.service';
 
+@SkipThrottle()
 @Controller('tracks')
 export class TracksController {
   constructor(private readonly tracksService: TracksService) {}

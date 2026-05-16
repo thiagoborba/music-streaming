@@ -6,6 +6,7 @@ import {
   Param,
   Res,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import type { Response } from 'express';
 import { StreamService } from './stream.service';
 
@@ -14,6 +15,7 @@ export class StreamController {
   constructor(private readonly streamService: StreamService) {}
 
   @Get(':trackId')
+  @Throttle({ default: { ttl: 60_000, limit: 60 } })
   async streamTrack(
     @Param('trackId') trackId: string,
     @Headers('range') rangeHeader: string,
