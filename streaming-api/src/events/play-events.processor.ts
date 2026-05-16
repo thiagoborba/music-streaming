@@ -1,21 +1,25 @@
 import { Process, Processor } from '@nestjs/bull';
-import { Logger } from '@nestjs/common';
+import { Inject, Logger } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 import type { Job } from 'bull';
 
 @Processor('play-events')
 export class PlayEventsProcessor {
   private readonly logger = new Logger(PlayEventsProcessor.name);
-  private readonly playCounts = new Map<string, number>();
+
+  constructor(@Inject(CACHE_MANAGER) private cache: Cache) {}
 
   @Process()
   async handlePlay(
     job: Job<{ trackId: string; timestamp: string }>,
   ): Promise<void> {
     const { trackId, timestamp } = job.data;
-    const current = this.playCounts.get(trackId) ?? 0;
-    this.playCounts.set(trackId, current + 1);
+    const current = (await this.cache.get<number>(`plays:${trackId}`)) ?? 0;
+    const next = current + 1;
+    await this.cache.set(`plays:${trackId}`, next, 0);
     this.logger.log(
-      `Play registered: track=${trackId} total=${current + 1} at=${timestamp}`,
+      `Play registered: track=${trackId} total=${next} at=${timestamp}`,
     );
   }
 }

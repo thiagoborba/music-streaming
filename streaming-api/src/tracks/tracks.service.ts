@@ -1,3 +1,5 @@
+import { readFile } from 'fs/promises';
+import { join } from 'path';
 import { Injectable, Logger } from '@nestjs/common';
 import type { Cache } from 'cache-manager';
 import { Inject } from '@nestjs/common';
@@ -9,6 +11,7 @@ export interface Track {
   artist: string;
   duration: number;
   genre: string;
+  playCount: number;
 }
 
 const CACHE_KEY_ALL = 'tracks:all';
@@ -16,35 +19,49 @@ const CACHE_KEY_ALL = 'tracks:all';
 @Injectable()
 export class TracksService {
   private readonly logger = new Logger(TracksService.name);
-  private readonly tracksJsonUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/tracks/tracks.json`;
+  private readonly tracksJsonUrl: string | null = process.env.SUPABASE_URL
+    ? `${process.env.SUPABASE_URL}/storage/v1/object/public/tracks/tracks.json`
+    : null;
 
   constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {}
 
+  private async loadLocal(): Promise<Omit<Track, 'playCount'>[]> {
+    const file = join(process.cwd(), 'audio', 'tracks.json');
+    const raw = await readFile(file, 'utf-8');
+    return JSON.parse(raw) as Omit<Track, 'playCount'>[];
+  }
+
   async findAll(): Promise<Track[]> {
-    const cached = await this.cacheManager.get<Track[]>(CACHE_KEY_ALL);
-    if (cached) return cached;
+    type RawTrack = Omit<Track, 'playCount'>;
 
-    const res = await fetch(this.tracksJsonUrl);
-    if (!res.ok)
-      throw new Error(`Falha ao carregar tracks.json: ${res.status}`);
-    const tracks: Track[] = await res.json();
+    let raw = await this.cacheManager.get<RawTrack[]>(CACHE_KEY_ALL);
+    if (!raw) {
+      if (this.tracksJsonUrl) {
+        const res = await fetch(this.tracksJsonUrl);
+        if (!res.ok)
+          throw new Error(`Falha ao carregar tracks.json: ${res.status}`);
+        raw = (await res.json()) as RawTrack[];
+      } else {
+        this.logger.warn(
+          'SUPABASE_URL não definida — usando tracks.json local',
+        );
+        raw = await this.loadLocal();
+      }
+      await this.cacheManager.set(CACHE_KEY_ALL, raw);
+      this.logger.log(`${raw.length} faixas carregadas e cacheadas`);
+    }
 
-    await this.cacheManager.set(CACHE_KEY_ALL, tracks);
-    this.logger.log(
-      `${tracks.length} faixas carregadas do Supabase e cacheadas`,
+    return Promise.all(
+      raw.map(async (t) => ({
+        ...t,
+        playCount: (await this.cacheManager.get<number>(`plays:${t.id}`)) ?? 0,
+      })),
     );
-    return tracks;
   }
 
   async findOne(id: string): Promise<Track | undefined> {
-    const cacheKey = `track:${id}`;
-    const cached = await this.cacheManager.get<Track>(cacheKey);
-    if (cached) return cached;
-
     const tracks = await this.findAll();
-    const track = tracks.find((t) => t.id === id);
-    if (track) await this.cacheManager.set(cacheKey, track);
-    return track;
+    return tracks.find((t) => t.id === id);
   }
 
   async refresh(): Promise<number> {
