@@ -5,7 +5,7 @@ import { Readable } from 'stream';
 
 @Injectable()
 export class StreamService {
-  private readonly supabaseUrl = process.env.SUPABASE_URL;
+  private readonly supabaseUrl = process.env.SUPABASE_URL?.replace(/\/$/, '');
   private readonly bucket = 'tracks';
 
   getPublicUrl(trackId: string): string | null {

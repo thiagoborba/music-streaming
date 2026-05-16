@@ -82,7 +82,7 @@ Veja `streaming-api/.env.example`. Em dev local nenhuma é obrigatória, mas o `
 
 | Variável               | Descrição                                              |
 |------------------------|--------------------------------------------------------|
-| `NEXT_PUBLIC_API_URL`  | URL pública do backend. Em prod: `https://<app>.up.railway.app` |
+| `NEXT_PUBLIC_API_URL`  | URL pública do backend. Em prod: `https://music-streaming-production.up.railway.app` |
 
 ## Áudio de amostra
 
