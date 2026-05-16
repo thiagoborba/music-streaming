@@ -19,6 +19,7 @@ function buildCorsOrigins(): (string | RegExp)[] {
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.getHttpAdapter().getInstance().set('trust proxy', 1);
   app.enableCors({ origin: buildCorsOrigins() });
   await app.listen(process.env.PORT ?? 3001, '0.0.0.0');
 }
