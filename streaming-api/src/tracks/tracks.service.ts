@@ -54,6 +54,13 @@ const TRACKS_SEED: Track[] = [
     duration: 284,
     genre: 'Rock',
   },
+  {
+    id: '7',
+    title: 'Patience',
+    artist: "Guns N' Roses",
+    duration: 358,
+    genre: 'Rock',
+  },
 ];
 
 @Injectable()
