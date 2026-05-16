@@ -1,0 +1,371 @@
+/* ── Página ── */
+.page {
+  background: #1a1a2e;
+  background-image: radial-gradient(
+    ellipse at center,
+    #16213e 0%,
+    #0f3460 50%,
+    #1a1a2e 100%
+  );
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Press Start 2P', monospace;
+}
+
+/* ── Janela Winamp ── */
+.winamp {
+  width: 380px;
+  user-select: none;
+  filter: drop-shadow(0 8px 32px rgba(0, 0, 0, 0.8));
+}
+
+/* ── Title bar ── */
+.titleBar {
+  background: linear-gradient(90deg, #1a6b1a 0%, #a8d400 40%, #1a6b1a 100%);
+  padding: 4px 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 2px solid;
+  border-color: #fff #555 #555 #fff;
+  cursor: move;
+}
+
+.titleBarText {
+  font-size: 7px;
+  color: #000;
+  letter-spacing: 1px;
+}
+
+.titleBarButtons {
+  display: flex;
+  gap: 2px;
+}
+
+.tbBtn {
+  width: 14px;
+  height: 11px;
+  font-size: 6px;
+  font-family: 'Press Start 2P', monospace;
+  background: #bbb;
+  border: 1px solid;
+  border-color: #fff #555 #555 #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000;
+  padding: 0;
+}
+
+.tbBtn:active {
+  border-color: #555 #fff #fff #555;
+}
+
+/* ── Painel principal ── */
+.mainPanel {
+  background: #232323;
+  border: 2px solid;
+  border-color: #555 #fff #fff #555;
+  border-top: none;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ── Display LED ── */
+.display {
+  background: #000;
+  border: 2px solid;
+  border-color: #555 #aaa #aaa #555;
+  padding: 8px 10px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.displayInfo {
+  flex: 1;
+  overflow: hidden;
+}
+
+.trackName {
+  font-size: 7px;
+  color: #a8d400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 6px;
+  text-shadow: 0 0 8px #a8d400;
+}
+
+.trackNameScrolling {
+  animation: marquee 8s linear infinite;
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.timeDisplay {
+  font-size: 9px;
+  color: #a8d400;
+  text-shadow: 0 0 8px #a8d400;
+  letter-spacing: 2px;
+}
+
+.bitrate {
+  font-size: 5px;
+  color: #5a7a00;
+  margin-top: 4px;
+}
+
+/* ── Equalizer bars ── */
+.eq {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 40px;
+}
+
+.eqBar {
+  width: 4px;
+  background: #a8d400;
+  box-shadow: 0 0 4px #a8d400;
+  min-height: 2px;
+  transition: height 0.1s ease;
+}
+
+.eqBarPlaying {
+  animation: eqBounce var(--dur, 0.4s) ease-in-out infinite alternate;
+}
+
+@keyframes eqBounce {
+  from {
+    height: var(--min, 4px);
+  }
+  to {
+    height: var(--max, 32px);
+  }
+}
+
+/* ── Progress bar ── */
+.progressWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.progressBar {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  background: linear-gradient(
+    90deg,
+    #a8d400 var(--pct, 0%),
+    #1a1a1a var(--pct, 0%)
+  );
+  border: 1px solid;
+  border-color: #555 #aaa #aaa #555;
+  cursor: pointer;
+  outline: none;
+}
+
+.progressBar::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 10px;
+  height: 10px;
+  background: linear-gradient(135deg, #fff 0%, #aaa 50%, #666 100%);
+  border: 1px solid;
+  border-color: #fff #555 #555 #fff;
+  cursor: pointer;
+}
+
+/* ── Controles ── */
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn {
+  background: linear-gradient(135deg, #4a4a4a 0%, #2a2a2a 50%, #1a1a1a 100%);
+  border: 2px solid;
+  border-color: #666 #222 #222 #666;
+  color: #a8d400;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  cursor: pointer;
+  padding: 5px 7px;
+  min-width: 28px;
+  text-align: center;
+  line-height: 1;
+}
+
+.btn:active {
+  border-color: #222 #666 #666 #222;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 50%, #4a4a4a 100%);
+}
+
+.playBtn {
+  background: linear-gradient(135deg, #3a5a00 0%, #1a3a00 50%, #0a2000 100%);
+  color: #a8d400;
+  padding: 5px 10px;
+}
+
+.playBtnActive {
+  border-color: #222 #666 #666 #222;
+  box-shadow: inset 0 0 8px rgba(168, 212, 0, 0.3);
+}
+
+.volumeWrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.volLabel {
+  font-size: 5px;
+  color: #5a7a00;
+}
+
+.volumeBar {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 60px;
+  height: 6px;
+  background: linear-gradient(
+    90deg,
+    #a8d400 var(--vol, 80%),
+    #111 var(--vol, 80%)
+  );
+  border: 1px solid;
+  border-color: #555 #aaa #aaa #555;
+  cursor: pointer;
+  outline: none;
+}
+
+.volumeBar::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 8px;
+  height: 10px;
+  background: linear-gradient(135deg, #fff 0%, #aaa 50%, #666 100%);
+  border: 1px solid;
+  border-color: #fff #555 #555 #fff;
+}
+
+/* ── Playlist ── */
+.playlistPanel {
+  background: #000;
+  border: 2px solid;
+  border-color: #555 #fff #fff #555;
+  border-top: none;
+}
+
+.playlistTitle {
+  background: linear-gradient(90deg, #1a6b1a 0%, #a8d400 40%, #1a6b1a 100%);
+  padding: 3px 6px;
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 2px solid #555;
+}
+
+.playlistTitle span {
+  font-size: 6px;
+  color: #000;
+}
+
+.playlistList {
+  max-height: 180px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #a8d400 #111;
+}
+
+.playlistList::-webkit-scrollbar {
+  width: 8px;
+  background: #111;
+}
+
+.playlistList::-webkit-scrollbar-thumb {
+  background: #a8d400;
+}
+
+.playlistItem {
+  display: flex;
+  align-items: center;
+  padding: 5px 8px;
+  cursor: pointer;
+  border-bottom: 1px solid #1a1a1a;
+  gap: 6px;
+  transition: background 0.1s;
+  border-left: 3px solid transparent;
+}
+
+.playlistItem:hover {
+  background: #0a1a0a;
+}
+
+.playlistItemActive {
+  background: #0d2600;
+  border-left-color: #a8d400;
+}
+
+.plNum {
+  font-size: 5px;
+  color: #3a5a00;
+  min-width: 16px;
+}
+
+.plInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.plTitle {
+  font-size: 6px;
+  color: #a8d400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.plArtist {
+  font-size: 5px;
+  color: #3a5a00;
+  margin-top: 2px;
+}
+
+.plDur {
+  font-size: 5px;
+  color: #3a5a00;
+}
+
+.plIcon {
+  font-size: 7px;
+  color: #a8d400;
+  min-width: 10px;
+  text-shadow: 0 0 4px #a8d400;
+}
+
+/* ── Estado offline ── */
+.offline {
+  color: #3a5a00;
+  font-size: 6px;
+  text-align: center;
+  padding: 20px 10px;
+  line-height: 2;
+}
