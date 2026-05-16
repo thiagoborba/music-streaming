@@ -19,7 +19,15 @@ export class StreamController {
     @Headers('range') rangeHeader: string,
     @Res() res: Response,
   ): Promise<void> {
-    const buffer = await this.streamService.getTrackBuffer(trackId);
+    const publicUrl = this.streamService.getPublicUrl(trackId);
+
+    if (publicUrl) {
+      res.redirect(302, publicUrl);
+      return;
+    }
+
+    // Fallback local para dev sem credenciais Supabase
+    const buffer = await this.streamService.getLocalBuffer(trackId);
     const fileSize = this.streamService.getFileSize(buffer);
 
     if (!rangeHeader) {
@@ -43,13 +51,11 @@ export class StreamController {
     }
 
     const chunkSize = end - start + 1;
-
     res.status(HttpStatus.PARTIAL_CONTENT);
     res.setHeader('Content-Range', `bytes ${start}-${end}/${fileSize}`);
     res.setHeader('Accept-Ranges', 'bytes');
     res.setHeader('Content-Length', chunkSize);
     res.setHeader('Content-Type', 'audio/mpeg');
-
     this.streamService.createRangeStream(buffer, start, end).pipe(res);
   }
 }
