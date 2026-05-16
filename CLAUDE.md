@@ -73,7 +73,7 @@ Veja `streaming-api/.env.example`. Em dev local nenhuma é obrigatória, mas o `
 | Variável        | Obrigatório | Onde                  | Descrição                                                                |
 |-----------------|-------------|-----------------------|--------------------------------------------------------------------------|
 | `SUPABASE_URL`  | sim         | Railway + dev         | URL do projeto Supabase (`https://<ref>.supabase.co`)                    |
-| `SUPABASE_KEY`  | sim         | Railway + dev         | Anon key pública (bucket `audio` é público)                              |
+| `SUPABASE_KEY`  | sim         | Railway + dev         | Anon key pública (bucket `tracks` é público)                             |
 | `REDIS_URL`     | prod        | Railway (automático)  | Injetado pelo add-on Redis. Em dev cai para `localhost:6379`             |
 | `CORS_ORIGIN`   | prod        | Railway               | Origens permitidas, separadas por vírgula. Ex.: `https://<app>.vercel.app` |
 | `PORT`          | não         | Railway (automático)  | Em dev cai para `3001`                                                   |
@@ -88,9 +88,9 @@ Veja `streaming-api/.env.example`. Em dev local nenhuma é obrigatória, mas o `
 
 Os 6 MP3s (`1.mp3` a `6.mp3`) vivem em duas localizações:
 - **Dev local**: `streaming-api/audio/` (ignorado pelo deploy do Railway)
-- **Produção**: bucket público `audio` no Supabase Storage
+- **Produção**: bucket público `tracks` no Supabase Storage
 
-Para subir manualmente: Supabase Dashboard → Storage → criar bucket `audio` (público) → upload dos 6 arquivos com os mesmos nomes.
+Para subir manualmente: Supabase Dashboard → Storage → criar bucket `tracks` (público) → upload dos 6 arquivos com os mesmos nomes.
 
 ## Arquitetura
 
@@ -134,6 +134,8 @@ O endpoint retorna imediatamente sem bloquear a resposta do usuário.
 
 ### Frontend — Vercel
 
+URL de produção: **https://music-streaming-red.vercel.app**
+
 1. Importar repo no Vercel.
 2. Em **Settings → General**, setar `Root Directory` = `streaming-web`.
 3. Em **Environment Variables**, adicionar `NEXT_PUBLIC_API_URL` = URL pública do Railway.
@@ -141,7 +143,9 @@ O endpoint retorna imediatamente sem bloquear a resposta do usuário.
 
 ### Supabase
 
+Projeto: **music-streaming-database**
+
 1. Criar projeto no Supabase.
-2. **Storage → New Bucket** com nome `audio`, marcado como **público**.
+2. **Storage → New Bucket** com nome `tracks`, marcado como **público**.
 3. Upload manual dos 6 arquivos de `streaming-api/audio/` para o bucket.
 4. Copiar `Project URL` e `anon public key` para as env vars do Railway.

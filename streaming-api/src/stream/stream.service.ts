@@ -12,7 +12,7 @@ import { Readable } from 'stream';
 @Injectable()
 export class StreamService implements OnModuleInit {
   private readonly logger = new Logger(StreamService.name);
-  private readonly bucket = 'audio';
+  private readonly bucket = 'tracks';
   private supabase: SupabaseClient | null = null;
   private readonly buffers = new Map<string, Buffer>();
   private readonly inflight = new Map<string, Promise<Buffer>>();

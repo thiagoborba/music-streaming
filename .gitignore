@@ -6,3 +6,4 @@ dist/
 *.log
 coverage/
 streaming-api/audio/*.mp3
+.vercel
