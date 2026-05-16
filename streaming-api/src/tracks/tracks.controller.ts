@@ -1,4 +1,10 @@
-import { Controller, Get, Param, NotFoundException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  NotFoundException,
+} from '@nestjs/common';
 import { TracksService } from './tracks.service';
 
 @Controller('tracks')
@@ -15,5 +21,11 @@ export class TracksController {
     const track = await this.tracksService.findOne(id);
     if (!track) throw new NotFoundException(`Track ${id} not found`);
     return track;
+  }
+
+  @Post('refresh')
+  async refresh() {
+    const count = await this.tracksService.refresh();
+    return { count };
   }
 }
