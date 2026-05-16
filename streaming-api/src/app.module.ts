@@ -6,6 +6,7 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { StreamModule } from './stream/stream.module';
 import { TracksModule } from './tracks/tracks.module';
 import { EventsModule } from './events/events.module';
+import { HealthModule } from './health/health.module';
 
 function bullRedisConfig() {
   const url = process.env.REDIS_URL;
@@ -21,6 +22,7 @@ function bullRedisConfig() {
     StreamModule,
     TracksModule,
     EventsModule,
+    HealthModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
