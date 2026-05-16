@@ -1,0 +1,12 @@
+[
+  { "id": "1", "title": "Like a Stone", "artist": "Audioslave", "duration": 294, "genre": "Rock" },
+  { "id": "2", "title": "Black", "artist": "Pearl Jam", "duration": 346, "genre": "Rock" },
+  { "id": "3", "title": "Toxicity", "artist": "System of a Down", "duration": 213, "genre": "Metal" },
+  { "id": "4", "title": "Time", "artist": "Pink Floyd", "duration": 413, "genre": "Rock" },
+  { "id": "5", "title": "Hotel California", "artist": "Eagles", "duration": 391, "genre": "Rock" },
+  { "id": "6", "title": "The Great Gig in the Sky", "artist": "Pink Floyd", "duration": 284, "genre": "Rock" },
+  { "id": "7", "title": "Patience", "artist": "Guns N' Roses", "duration": 358, "genre": "Rock" },
+  { "id": "8", "title": "Rocket Man", "artist": "Elton John", "duration": 282, "genre": "Rock" },
+  { "id": "9", "title": "Carry on Wayward Son", "artist": "Kansas", "duration": 324, "genre": "Rock" },
+  { "id": "10", "title": "Echoes (Live at Pompeii)", "artist": "Pink Floyd", "duration": 1274, "genre": "Rock" }
+]
