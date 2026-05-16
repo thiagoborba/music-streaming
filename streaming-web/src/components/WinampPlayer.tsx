@@ -9,6 +9,7 @@ interface Track {
   artist: string;
   duration: number;
   genre: string;
+  playCount?: number;
 }
 
 interface Props {
@@ -58,6 +59,7 @@ export function WinampPlayer({ tracks }: Props) {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(0.8);
+  const [bufferedPct, setBufferedPct] = useState(0);
 
   const currentTrack = tracks[currentIndex];
   const progressPct = duration > 0 ? (currentTime / duration) * 100 : 0;
@@ -110,6 +112,7 @@ export function WinampPlayer({ tracks }: Props) {
     setCurrentIndex(index);
     setCurrentTime(0);
     setDuration(0);
+    setBufferedPct(0);
     setIsPlaying(false);
     if (wasPlaying) {
       play(audio, index);
@@ -127,6 +130,16 @@ export function WinampPlayer({ tracks }: Props) {
   function handleTimeUpdate() {
     const audio = audioRef.current;
     if (audio) setCurrentTime(audio.currentTime);
+  }
+
+  function handleProgress() {
+    const audio = audioRef.current;
+    if (!audio || !audio.duration) return;
+    if (audio.buffered.length > 0) {
+      setBufferedPct(
+        (audio.buffered.end(audio.buffered.length - 1) / audio.duration) * 100,
+      );
+    }
   }
 
   function handleLoadedMetadata() {
@@ -179,6 +192,7 @@ export function WinampPlayer({ tracks }: Props) {
         ref={audioRef}
         preload="none"
         onTimeUpdate={handleTimeUpdate}
+        onProgress={handleProgress}
         onLoadedMetadata={handleLoadedMetadata}
         onEnded={handleEnded}
         onPause={() => setIsPlaying(false)}
@@ -246,8 +260,10 @@ export function WinampPlayer({ tracks }: Props) {
               onChange={handleSeek}
               aria-label="Progresso da faixa"
               style={
-                { '--pct': `${progressPct}%` } as React.CSSProperties &
-                  Record<string, string>
+                {
+                  '--pct': `${progressPct}%`,
+                  '--buf': `${bufferedPct}%`,
+                } as React.CSSProperties & Record<string, string>
               }
             />
           </div>
@@ -335,7 +351,12 @@ export function WinampPlayer({ tracks }: Props) {
                   <div className={s.plTitle}>{track.title.toUpperCase()}</div>
                   <div className={s.plArtist}>{track.artist}</div>
                 </div>
-                <span className={s.plDur}>{fmt(track.duration)}</span>
+                <div className={s.plDurWrap}>
+                  <span className={s.plDur}>{fmt(track.duration)}</span>
+                  {track.playCount !== undefined && (
+                    <span className={s.plPlays}>▶ {track.playCount}x</span>
+                  )}
+                </div>
               </div>
             ))}
           </div>

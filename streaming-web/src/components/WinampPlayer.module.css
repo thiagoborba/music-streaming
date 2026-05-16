@@ -175,7 +175,8 @@
   background: linear-gradient(
     90deg,
     #a8d400 var(--pct, 0%),
-    #1a1a1a var(--pct, 0%)
+    #3a5a00 var(--pct, 0%) var(--buf, 0%),
+    #1a1a1a var(--buf, 0%)
   );
   border: 1px solid;
   border-color: #555 #aaa #aaa #555;
@@ -349,9 +350,21 @@
   margin-top: 2px;
 }
 
+.plDurWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
 .plDur {
   font-size: 5px;
   color: #3a5a00;
+}
+
+.plPlays {
+  font-size: 5px;
+  color: #5a7a00;
 }
 
 .plIcon {

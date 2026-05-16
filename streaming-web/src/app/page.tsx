@@ -11,7 +11,10 @@ interface Track {
 async function getTracks(): Promise<Track[]> {
   try {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
-    const res = await fetch(`${apiUrl}/tracks`, { cache: 'no-store' });
+    const res = await fetch(`${apiUrl}/tracks`, {
+      cache: 'no-store',
+      signal: AbortSignal.timeout(5000),
+    });
     if (!res.ok) return [];
     return res.json();
   } catch {
