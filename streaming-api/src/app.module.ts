@@ -10,8 +10,18 @@ import { HealthModule } from './health/health.module';
 
 function bullRedisConfig() {
   const url = process.env.REDIS_URL;
-  if (url) return { redis: url };
-  return { redis: { host: 'localhost', port: 6379 } };
+  if (!url) return { redis: { host: 'localhost', port: 6379 } };
+
+  const parsed = new URL(url);
+  return {
+    redis: {
+      host: parsed.hostname,
+      port: parseInt(parsed.port, 10) || 6379,
+      username: parsed.username || undefined,
+      password: parsed.password || undefined,
+      tls: parsed.protocol === 'rediss:' ? {} : undefined,
+    },
+  };
 }
 
 @Module({

@@ -7,6 +7,7 @@ const pressStart = Press_Start_2P({
   weight: '400',
   subsets: ['latin'],
   variable: '--font-press-start',
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
