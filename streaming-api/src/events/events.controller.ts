@@ -15,10 +15,12 @@ export class EventsController {
   @Throttle({ default: { ttl: 60_000, limit: 30 } })
   @HttpCode(HttpStatus.ACCEPTED)
   async registerPlay(@Body() body: PlayEventDto) {
-    await this.playQueue.add({
-      trackId: body.trackId,
-      timestamp: new Date().toISOString(),
-    });
+    this.playQueue
+      .add({
+        trackId: body.trackId,
+        timestamp: new Date().toISOString(),
+      })
+      .catch(() => {});
     return { queued: true };
   }
 }

@@ -40,46 +40,62 @@ function fmt(seconds: number): string {
   return `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
 }
 
-async function registerPlay(trackId: string): Promise<void> {
-  try {
-    await fetch(`${API_URL}/events/play`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ trackId }),
-    });
-  } catch {
-    // não bloqueia o player se o evento falhar
-  }
-}
-
 export function WinampPlayer({ tracks }: Props) {
   const audioRef = useRef<HTMLAudioElement>(null);
+  const registerPlayAbortRef = useRef<AbortController | null>(null);
+  const playPromiseRef = useRef<Promise<void> | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(0.8);
   const [bufferedPct, setBufferedPct] = useState(0);
+  const [playCounts, setPlayCounts] = useState<Record<string, number>>(() =>
+    Object.fromEntries(tracks.map((t) => [t.id, t.playCount ?? 0])),
+  );
 
   const currentTrack = tracks[currentIndex];
   const progressPct = duration > 0 ? (currentTime / duration) * 100 : 0;
   const displayDuration =
     duration > 0 ? duration : (currentTrack?.duration ?? 0);
 
+  const registerPlay = useCallback(async (trackId: string) => {
+    registerPlayAbortRef.current?.abort();
+    registerPlayAbortRef.current = new AbortController();
+    try {
+      await fetch(`${API_URL}/events/play`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ trackId }),
+        signal: registerPlayAbortRef.current.signal,
+      });
+    } catch (e) {
+      if (e instanceof DOMException && e.name === 'AbortError') return;
+    }
+  }, []);
+
   const play = useCallback(
     async (audio: HTMLAudioElement, index: number) => {
       if (!audio.src || audio.src === window.location.href) {
         audio.src = `${API_URL}/stream/${tracks[index].id}`;
       }
+      const p = audio.play();
+      playPromiseRef.current = p;
       try {
-        await audio.play();
-        setIsPlaying(true);
-        registerPlay(tracks[index].id);
+        await p;
+        if (playPromiseRef.current === p) {
+          setIsPlaying(true);
+          setPlayCounts((prev) => ({
+            ...prev,
+            [tracks[index].id]: (prev[tracks[index].id] ?? 0) + 1,
+          }));
+          registerPlay(tracks[index].id);
+        }
       } catch {
         setIsPlaying(false);
       }
     },
-    [tracks],
+    [tracks, registerPlay],
   );
 
   function togglePlay() {
@@ -353,9 +369,9 @@ export function WinampPlayer({ tracks }: Props) {
                 </div>
                 <div className={s.plDurWrap}>
                   <span className={s.plDur}>{fmt(track.duration)}</span>
-                  {track.playCount !== undefined && (
-                    <span className={s.plPlays}>▶ {track.playCount}x</span>
-                  )}
+                  <span className={s.plPlays}>
+                    ▶ {playCounts[track.id] ?? 0}x
+                  </span>
                 </div>
               </div>
             ))}

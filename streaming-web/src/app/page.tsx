@@ -1,4 +1,4 @@
-import { WinampPlayer } from '@/components/WinampPlayer';
+import { PlayerClient } from '@/components/PlayerClient';
 
 interface Track {
   id: string;
@@ -24,5 +24,5 @@ async function getTracks(): Promise<Track[]> {
 
 export default async function HomePage() {
   const tracks = await getTracks();
-  return <WinampPlayer tracks={tracks} />;
+  return <PlayerClient tracks={tracks} />;
 }
